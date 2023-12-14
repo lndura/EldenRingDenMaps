@@ -1,0 +1,505 @@
+<?xml version="1.0" encoding="utf-8"?>
+<CheatTable>
+  <CheatEntries>
+    <CheatEntry>
+      <ID>1337291996</ID>
+      <Description>"DenMaps SetStats"</Description>
+      <Color>FF9EEF</Color>
+      <VariableType>Auto Assembler Script</VariableType>
+      <AssemblerScript>{
+Author: Indura
+Date:   14/12/2023
+Game:   Elden Ring (Seamless Coop / Den Maps ONLY)
+
+I really have no life huh that i spent like 25 hours making this.
+Hope it can be used in fututre versions as well by just changing Ptrs.
+}
+
+{$lua}
+[enable]
+--[[
+ Syntax Check End
+--==============================================================================
+ Define Pointers Start
+--]]
+StartingClassPtr = "[[GameDataMan]+8]+BF"
+LvlPtr = "[[GameDataMan]+8]+68"
+
+VigorPtr = "[[GameDataMan]+8]+3C"
+MindPtr = "[[GameDataMan]+8]+40"
+EndurancePtr = "[[GameDataMan]+8]+44"
+StrengthPtr = "[[GameDataMan]+8]+48"
+DexterityPtr = "[[GameDataMan]+8]+4C"
+IntelligencePtr = "[[GameDataMan]+8]+50"
+FaithPtr = "[[GameDataMan]+8]+54"
+ArcanePtr = "[[GameDataMan]+8]+58"
+
+GenderTypePtr = "[[GameDataMan]+8]+BE"
+VoiceTypePtr = "[[GameDataMan]+8]+C2"
+WeaponLvlPtr = "[[GameDataMan]+8]+E2"
+--[[
+ Define Pointers End
+--=========================================================================================================================================================================================================================================
+ Debug Stuff Start
+--]]
+local MinimumStatsTimerInterval = 1000   -- Increase this value on bad pc's
+local CheckValueInterval = 1000         -- Increase this value if you type really slow
+local NestedSleepInterval = 1000
+
+if readQword('GameDataMan') == nil then
+   showMessage([[
+   Open Grand Archives Table before using.
+   Make sure the Adresses are up to date.
+   Don't use this for Vanilla.
+   DenMaps Seamless Coop Only.
+
+   -- Indura
+   ]])
+   autoDisable(memrec)
+end
+local updatemessage = [[
+      Your Character has been Created.
+
+      Now back to duelos anyone?
+
+      -- Indura
+      ]]
+--[[
+ Debug Stuff End
+--=========================================================================================================================================================================================================================================
+ Function List Start
+--]]
+-- Set HP, MP, SP and EQ relative to Rune Level
+local function createScaleLabel(parent, left, top, caption)
+    local label = createLabel(parent)
+    label.Left = left
+    label.Top = top
+    label.Caption = caption
+    return label
+end
+
+-- Set Stat pointer labels and Txt's relative to StatLabel and itself
+function createStatLabel(parent, caption, offset)
+    local statLabel = createLabel(parent)
+          statLabel.Caption = caption
+          statLabel.Left = StatsLabel.Left
+          statLabel.Top = StatsLabel.Top + offset
+    local statTxt = createEdit(parent)
+          statTxt.Width = 30
+          statTxt.Height = 30
+          statTxt.Left = statLabel.Left + 76
+          statTxt.Top = statLabel.Top - 3
+    return statLabel, statTxt
+end
+
+-- Checks Input Stats
+local function StatTxtOnChange(sender, minValue)
+   if sender.FunctionAlreadyCalled then
+      return
+   end
+   sender.FunctionAlreadyCalled = true  -- Set to true to indicate that the function has been called
+   createThread(function()
+   sleep(CheckValueInterval)
+   local newValue = tonumber(sender.Text)
+   local maxValue = 99 -- It's always 99
+   if newValue then
+      if newValue &lt; minValue then
+         sender.Text = tostring(minValue)
+      elseif newValue &gt; maxValue then
+         sender.Text = tostring(maxValue)
+      end
+   else
+      sender.Text = tostring(minValue) -- Value is not a number
+   end
+   sender.FunctionAlreadyCalled = false  -- Reset the flag for the next call
+   end)
+end
+
+-- Checks Input Stats
+function ComboBoxCheck(sender, minValue)
+   local newValue = tonumber(sender.Text)
+   local maxValue = 99 -- It's always 99
+   if newValue then
+      if newValue &lt; minValue then
+         sender.Text = tostring(minValue)
+      elseif newValue &gt; maxValue then
+         sender.Text = tostring(maxValue)
+      end
+   else
+      sender.Text = tostring(minValue) -- Value is not a number
+   end
+end
+
+-- Get Level Total
+function getLeveltotal()
+   if vigorValue and mindValue and enduranceValue and strengthValue and dexterityValue and intelligenceValue and faithValue and arcaneValue ~= nil then
+      RuneLvl = (StartValue + (vigorValue - tonumber(minStats[1])) + (mindValue - tonumber(minStats[2])) + (enduranceValue - tonumber(minStats[3])) + (strengthValue - tonumber(minStats[4])) + (dexterityValue - tonumber(minStats[5])) + (intelligenceValue - tonumber(minStats[6])) + (faithValue - tonumber(minStats[7])) + (arcaneValue - tonumber(minStats[8])))
+      if type(RuneLvl) == 'number' then
+         RuneLevel.Caption = RuneLvl
+      else
+         RuneLevel.Caption = 'Null'
+      end
+   else
+      RuneLevel.Caption = 'Null'
+   end
+end
+
+-- Get Health Total
+function getHealthValue(vigorValue)
+   if vigorValue == nil then
+      HpTotal.Caption = 'Null'
+   elseif vigorValue &lt;= 1 then
+      HpTotal.Caption = '300'
+   elseif vigorValue &lt; 25 then
+      HpTotal.Caption = string.format('%-5d', math.floor(math.pow((vigorValue - 1) / 24, 1.5) * 500 + 300))
+   elseif vigorValue &lt; 40 then
+      HpTotal.Caption = string.format('%-5d', math.floor(math.pow((vigorValue - 25) / 15, 1.1) * 650 + 800))
+   elseif vigorValue &lt; 60 then
+      HpTotal.Caption = string.format('%-5d', math.floor((1 - math.pow(1 - (vigorValue - 40) / 20, 1.2)) * 450 + 1450))
+   elseif vigorValue &lt; 99 then
+      HpTotal.Caption = string.format('%-5d', math.floor((1 - math.pow(1 - (vigorValue - 60) / 39, 1.2)) * 200 + 1900))
+   elseif vigorValue &gt;= 99 then
+      HpTotal.Caption = '2100'
+   else
+      HpTotal.Caption = 'Null'
+   end
+end
+
+-- Get Mana Total
+function getFocusValue(mindValue)
+   if mindValue == nil then
+      MpTotal.Caption = 'Null'
+   elseif mindValue &lt;= 1 then
+      MpTotal.Caption = '50'
+   elseif mindValue &lt; 15 then
+      MpTotal.Caption = string.format('%-5d', math.floor(((mindValue - 1) / 14) * 45 + 50))
+   elseif mindValue &lt; 35 then
+      MpTotal.Caption = string.format('%-5d', math.floor(((mindValue - 15) / 20) * 105 + 95))
+   elseif mindValue &lt; 60 then
+      MpTotal.Caption = string.format('%-5d', math.floor((1 - math.pow(1 - (mindValue - 35) / 25, 1.2)) * 150 + 200))
+   elseif mindValue &lt; 99 then
+      MpTotal.Caption = string.format('%-5d', math.floor(((mindValue - 60) / 39) * 100 + 350))
+   elseif mindValue &gt;= 99 then
+      MpTotal.Caption = '450'
+   else
+      MpTotal.Caption = 'Null'
+   end
+end
+
+-- Get Stamina Total
+function getEnduranceValue(enduranceValue)
+   if enduranceValue == nil then
+      SpTotal.Caption = 'Null'
+   elseif enduranceValue &lt;= 1 then
+      SpTotal.Caption = '80'
+   elseif enduranceValue &lt; 15 then
+      SpTotal.Caption = string.format('%-5d', math.floor(((enduranceValue - 1) / 14) * 25 + 80))
+   elseif enduranceValue &lt; 30 then
+      SpTotal.Caption = string.format('%-5d', math.floor(((enduranceValue - 15) / 15) * 25 + 105))
+   elseif enduranceValue &lt; 50 then
+      SpTotal.Caption = string.format('%-5d', math.floor(((enduranceValue - 30) / 20) * 25 + 130))
+   elseif enduranceValue &lt; 99 then
+      SpTotal.Caption = string.format('%-5d', math.floor(((enduranceValue - 50) / 49) * 15 + 155))
+   elseif enduranceValue &gt;= 99 then
+      SpTotal.Caption = '170'
+   else
+      SpTotal.Caption = 'Null'
+   end
+end
+
+-- Get Equip Load
+function getEquipLoad(enduranceValue)
+   if enduranceValue == nil then
+      EqTotal.Caption = 'Null'
+   elseif enduranceValue &lt;= 1 then
+      EqTotal.Caption = '45.0'
+   elseif enduranceValue &lt; 8 then
+      EqTotal.Caption = string.format('%.1f', ((enduranceValue - 1) / 7) * 0 + 45)
+   elseif enduranceValue &lt; 25 then
+      EqTotal.Caption = string.format('%.1f', ((enduranceValue - 8) / 17) * 27 + 45)
+   elseif enduranceValue &lt; 60 then
+      EqTotal.Caption = string.format('%.1f', math.pow((enduranceValue - 25) / 35, 1.1) * 48 + 72)
+   elseif enduranceValue &lt; 99 then
+      EqTotal.Caption = string.format('%.1f', ((enduranceValue - 60) / 39) * 40 + 120)
+   elseif enduranceValue &gt;= 99 then
+      EqTotal.Caption = '160.0'
+   else
+      EqTotal.Caption = 'Null'
+   end
+end
+
+local function UpdateCharStats() -- Clicking Update Stats Button
+   createThread(function()
+   sleep(100)
+      writeInteger(LvlPtr, RuneLvl)
+      writeInteger(StartingClassPtr, tonumber(minStats[9]))
+      writeInteger(VigorPtr, vigorValue)
+      writeInteger(MindPtr, mindValue)
+      writeInteger(EndurancePtr, enduranceValue)
+      writeInteger(StrengthPtr, strengthValue)
+      writeInteger(DexterityPtr, dexterityValue)
+      writeInteger(IntelligencePtr, intelligenceValue)
+      writeInteger(FaithPtr, faithValue)
+      writeInteger(ArcanePtr, arcaneValue)
+   end)
+   showMessage(updatemessage)
+   disableMemrec(memrec)
+end
+
+local function QuitOut() -- Closing the form by other means
+   disableMemrec(memrec)
+end
+--[[
+ Function List End
+--=========================================================================================================================================================================================================================================
+ Array List Start
+--]]
+ClassStatsArray = {
+{15, 10, 11, 14, 13, 9, 9, 7,    --[[Stas, ClassID, Lvl &amp; name]] 0, 9,  'Vagabond'},
+{11, 12, 11, 10, 16, 10, 8, 9,   --[[Stas, ClassID, Lvl &amp; name]] 1, 8,  'Warrior'},
+{14, 9, 12, 16, 9, 7, 8, 11,     --[[Stas, ClassID, Lvl &amp; name]] 2, 7,  'Hero'},
+{10, 11, 10, 9, 13, 9, 9, 14,    --[[Stas, ClassID, Lvl &amp; name]] 3, 5,  'Bandit'},
+{9, 15, 9, 8, 12, 16, 7, 9,      --[[Stas, ClassID, Lvl &amp; name]] 4, 6,  'Astrologer'},
+{11, 14, 8, 11, 10, 7, 16, 10,   --[[Stas, ClassID, Lvl &amp; name]] 5, 7,  'Prophet'},
+{10, 13, 10, 12, 12, 9, 14, 9,   --[[Stas, ClassID, Lvl &amp; name]] 6, 10, 'Confessor'},
+{12, 11, 13, 12, 15, 9, 8, 8,    --[[Stas, ClassID, Lvl &amp; name]] 7, 9,  'Samurai'},
+{11, 12, 11, 11, 14, 14, 6, 9,   --[[Stas, ClassID, Lvl &amp; name]] 8, 9,  'Prisoner'},
+{10, 10, 10, 10, 10, 10, 10, 10, --[[Stas, ClassID, Lvl &amp; name]] 9, 1,  'Wretch'}
+}
+
+-- Globalized for functions
+vigorValue = 0
+mindValue = 0
+enduranceValue = 0
+strengthValue = 0
+dexterityValue = 0
+intelligenceValue = 0
+faithValue = 0
+arcaneValue = 0
+
+local previousMinLabels = {}  -- Keep track of previously created labels
+minStats = {} -- Globalized for functions
+
+--[[
+ Array List End
+--=========================================================================================================================================================================================================================================
+ Actual Code Start
+--]]
+
+-- Create a form
+BuildMaker = createForm(true) -- Globalized for functions
+BuildMaker.Caption = 'DenMaps Character Stat Editor'
+BuildMaker.Width = 340
+BuildMaker.Height = 200
+BuildMaker.OnClose = QuitOut
+BuildMaker.centerScreen()
+
+-- Display Rune Level
+local RuneCapt = createLabel(BuildMaker)
+      RuneCapt.Left = 20
+      RuneCapt.Top = 10
+      RuneCapt.Caption = 'Rune Level:'
+      RuneLevel = createLabel(BuildMaker) -- Globalized for functions
+      RuneLevel.Left = RuneCapt.Left + 80
+      RuneLevel.Top = RuneCapt.Top
+
+-- Display health, focus, stamina and equip load relative to Rune Level.
+local ScaleTotal = {}
+local ScaleCapt = {
+    {'Health:', 'Focus:', 'Stamina:', 'Equip Load:'},
+}
+HpCapt = createScaleLabel(BuildMaker, RuneCapt.Left, RuneCapt.Top + 25, ScaleCapt[1][1])
+HpTotal = createScaleLabel(BuildMaker, RuneLevel.Left, HpCapt.Top)
+MpCapt = createScaleLabel(BuildMaker, RuneCapt.Left, HpCapt.Top + 25, ScaleCapt[1][2])
+MpTotal = createScaleLabel(BuildMaker, RuneLevel.Left, MpCapt.Top)
+SpCapt = createScaleLabel(BuildMaker, RuneCapt.Left, MpCapt.Top + 25, ScaleCapt[1][3])
+SpTotal = createScaleLabel(BuildMaker, RuneLevel.Left, SpCapt.Top)
+EqCapt = createScaleLabel(BuildMaker, RuneCapt.Left, SpCapt.Top + 25, ScaleCapt[1][4])
+EqTotal = createScaleLabel(BuildMaker, RuneLevel.Left, EqCapt.Top)
+table.insert(ScaleTotal, {HpCapt, MpCapt, SpCapt, EqCapt})
+table.insert(ScaleTotal, {HpTotal, MpTotal, SpTotal, EqTotal})
+-- Total values get updated in the timer below
+
+-- Create a label for the StartingClass list
+local StartingClassLabel = createLabel(BuildMaker)
+      StartingClassLabel.Caption = 'Class:'
+      StartingClassLabel.Left = HpCapt.Left
+      StartingClassLabel.Top = EqTotal.Top + 25
+
+-- Create a StartingClass list
+local StartingClassList = createComboBox(BuildMaker)
+      StartingClassList.Width = 85
+      StartingClassList.Height = 30
+      StartingClassList.Left = StartingClassLabel.Left + 35
+      StartingClassList.Top = StartingClassLabel.Top - 3
+      -- Add items to the dropdown list with numbers and descriptions
+      for _, classInfo in ipairs(ClassStatsArray) do
+          StartingClassList.Items.add(classInfo[#classInfo])
+      end
+      -- Set the startingclass to that of the current one
+      local startingClassValue = readInteger(StartingClassPtr)
+      local selectedIndex = nil
+      for index, classInfo in ipairs(ClassStatsArray) do
+          if classInfo[9] == startingClassValue then
+             selectedIndex = index - 1  -- Adjust for the 0-based index of the dropdown list
+             break
+          end
+      end
+
+-- Set the dropdown list index
+StartingClassList.ItemIndex = selectedIndex or 0  -- Default to 0 if not found
+
+-- Create a label for the Stats
+StatsLabel = createLabel(BuildMaker) -- Globalized for functions
+StatsLabel.Caption = 'Stats:'
+StatsLabel.Left = 180
+StatsLabel.Top = RuneCapt.Top
+
+-- Create the "New:" label
+local newLabel = createLabel(BuildMaker)
+      newLabel.Caption = 'New:'
+      newLabel.Left = StatsLabel.Left + 76
+      newLabel.Top = StatsLabel.Top
+
+-- Create the "Min:" label
+local minLabel = createLabel(BuildMaker)
+      minLabel.Caption = 'Min:'
+      minLabel.Left = newLabel.Left + 45
+      minLabel.Top = StatsLabel.Top
+
+-- Create labels and text boxes for each stat
+local VigorLabel, VigorTxt = createStatLabel(BuildMaker, 'Vigor:', 25)
+local MindLabel, MindTxt = createStatLabel(BuildMaker, 'Mind:', 45)
+local EnduranceLabel, EnduranceTxt = createStatLabel(BuildMaker, 'Endurance:', 65)
+local StrengthLabel, StrengthTxt = createStatLabel(BuildMaker, 'Strength:', 85)
+local DexterityLabel, DexterityTxt = createStatLabel(BuildMaker, 'Dexterity:', 105)
+local IntelligenceLabel, IntelligenceTxt = createStatLabel(BuildMaker, 'Intelligence:', 125)
+local FaithLabel, FaithTxt = createStatLabel(BuildMaker, 'Faith:', 145)
+local ArcaneLabel, ArcaneTxt = createStatLabel(BuildMaker, 'Arcane:', 165)
+
+      -- Change Starting Text Boxes depending on Current Stats (if they exist)
+      VigorTxt.Text = readInteger(VigorPtr)
+      MindTxt.Text = readInteger(MindPtr)
+      EnduranceTxt.Text = readInteger(EndurancePtr)
+      StrengthTxt.Text = readInteger(StrengthPtr)
+      DexterityTxt.Text = readInteger(DexterityPtr)
+      IntelligenceTxt.Text = readInteger(IntelligencePtr)
+      FaithTxt.Text = readInteger(FaithPtr)
+      ArcaneTxt.Text = readInteger(ArcanePtr)
+
+
+-- Assign the function to the OnChange event of each text box and the dropdown list
+VigorTxt.OnChange = function() StatTxtOnChange(VigorTxt, tonumber(minStats[1])) end
+MindTxt.OnChange = function() StatTxtOnChange(MindTxt, tonumber(minStats[2])) end
+EnduranceTxt.OnChange = function() StatTxtOnChange(EnduranceTxt, tonumber(minStats[3])) end
+StrengthTxt.OnChange = function() StatTxtOnChange(StrengthTxt, tonumber(minStats[4])) end
+DexterityTxt.OnChange = function() StatTxtOnChange(DexterityTxt, tonumber(minStats[5])) end
+IntelligenceTxt.OnChange = function() StatTxtOnChange(IntelligenceTxt, tonumber(minStats[6])) end
+FaithTxt.OnChange = function() StatTxtOnChange(FaithTxt, tonumber(minStats[7])) end
+ArcaneTxt.OnChange = function() StatTxtOnChange(ArcaneTxt, tonumber(minStats[8])) end
+StartingClassList.OnChange = function ()
+ComboBoxCheck(VigorTxt, tonumber(minStats[1]))
+ComboBoxCheck(MindTxt, tonumber(minStats[2]))
+ComboBoxCheck(EnduranceTxt, tonumber(minStats[3]))
+ComboBoxCheck(StrengthTxt, tonumber(minStats[4]))
+ComboBoxCheck(DexterityTxt, tonumber(minStats[5]))
+ComboBoxCheck(IntelligenceTxt, tonumber(minStats[6]))
+ComboBoxCheck(FaithTxt, tonumber(minStats[7]))
+ComboBoxCheck(ArcaneTxt, tonumber(minStats[8]))
+end
+
+local Divider1 = createButton(BuildMaker)
+      Divider1.Width = 2
+      Divider1.Height = 250
+      Divider1.Left = StatsLabel.Left - 20
+      Divider1.Top = StatsLabel.Top - 20
+
+local Divider2 = createButton(BuildMaker)
+      Divider2.Width = 2
+      Divider2.Height = 250
+      Divider2.Left = minLabel.Left - 7
+      Divider2.Top = minLabel.Top - 20
+
+local Divider3 = createButton(BuildMaker)
+      Divider3.Width = 350
+      Divider3.Height = 2
+      Divider3.Left = -5
+      Divider3.Top = RuneCapt.Top + 17
+
+-- Create a Custom button
+local BuildMakerButton = createButton(BuildMaker)
+      BuildMakerButton.Caption = 'Create build'
+      BuildMakerButton.Width = 122
+      BuildMakerButton.Height = 30
+      BuildMakerButton.Left = HpCapt.Left
+      BuildMakerButton.Top = StartingClassList.Top + 30
+      BuildMakerButton.onClick = UpdateCharStats
+--[[
+ Form Code End
+--=========================================================================================================================================================================================================================================
+ Timer Code Start
+--]]
+
+-- Change Displayed Values according to selected options
+CharacterSettingsCheckTimer = createTimer(getMainForm()) -- Globalized for functions
+CharacterSettingsCheckTimer.Interval = MinimumStatsTimerInterval
+CharacterSettingsCheckTimer.OnTimer = function()
+
+   -- Destroy previously created labels
+   for _, label in ipairs(previousMinLabels) do
+          label.destroy()
+   end
+   previousMinLabels = {}  -- Clear the previous labels array
+
+   -- Get the current index value
+   local StartingClassLabelIndex = StartingClassList.ItemIndex
+   local SelectedStartingClassLabelOption = StartingClassList.Items[StartingClassLabelIndex]
+   local selectedIndex = StartingClassList.Items.indexOf(SelectedStartingClassLabelOption)
+   if selectedIndex ~= -1 then
+      minStats = ClassStatsArray[selectedIndex + 1]
+   else
+      -- Handle the case when the selected index is not found
+      minStats = {}
+   end
+
+   -- Display the Min Values and store references in the previousMinLabels array
+   for i, value in ipairs(minStats) do
+       local minLabel = createLabel(BuildMaker)
+       minLabel.Caption = tostring(value)
+       minLabel.Left = newLabel.Left + 45
+       minLabel.Top = (StatsLabel.Top - 17.5) + (i + 1) * 20.5
+       minLabel.Description = "Min Stat " .. i
+       table.insert(previousMinLabels, minLabel)
+   end
+
+   -- Update Rune/HP/MP/SP Label
+   StartValue = tonumber(minStats[10])
+   vigorValue = tonumber(VigorTxt.Text)
+   mindValue = tonumber(MindTxt.Text)
+   enduranceValue = tonumber(EnduranceTxt.Text)
+   strengthValue = tonumber(StrengthTxt.Text)
+   dexterityValue = tonumber(DexterityTxt.Text)
+   intelligenceValue = tonumber(IntelligenceTxt.Text)
+   faithValue = tonumber(FaithTxt.Text)
+   arcaneValue = tonumber(ArcaneTxt.Text)
+
+   -- Grab Health, Focus, Stamina and Equip Load Values
+   getHealthValue(vigorValue)
+   getFocusValue(mindValue)
+   getEnduranceValue(enduranceValue)
+   getEquipLoad(enduranceValue)
+   getLeveltotal()
+end
+--[[
+ Timer Code End
+--=========================================================================================================================================================================================================================================
+ Disable Code Start
+--]]
+[disable]
+BuildMaker.destroy()
+CharacterSettingsCheckTimer.destroy()
+
+</AssemblerScript>
+    </CheatEntry>
+  </CheatEntries>
+</CheatTable>
