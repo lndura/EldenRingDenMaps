@@ -2,11 +2,11 @@
 <CheatTable>
   <CheatEntries>
     <CheatEntry>
-      <ID>1337291996</ID>
+      <ID>1337291998</ID>
       <Description>"DenMaps SetStats"</Description>
       <Color>FF9EEF</Color>
       <VariableType>Auto Assembler Script</VariableType>
-      <AssemblerScript>{
+      <AssemblerScript><![CDATA[{
 Author: Indura
 Date:   14/12/2023
 Game:   Elden Ring (Seamless Coop / Den Maps ONLY)
@@ -14,7 +14,6 @@ Game:   Elden Ring (Seamless Coop / Den Maps ONLY)
 I really have no life huh that i spent like 25 hours making this.
 Hope it can be used in fututre versions as well by just changing Ptrs.
 }
-
 {$lua}
 [enable]
 --[[
@@ -22,21 +21,23 @@ Hope it can be used in fututre versions as well by just changing Ptrs.
 --==============================================================================
  Define Pointers Start
 --]]
-StartingClassPtr = "[[GameDataMan]+8]+BF"
-LvlPtr = "[[GameDataMan]+8]+68"
+BasePtr = "[[GameDataMan]+8]"
 
-VigorPtr = "[[GameDataMan]+8]+3C"
-MindPtr = "[[GameDataMan]+8]+40"
-EndurancePtr = "[[GameDataMan]+8]+44"
-StrengthPtr = "[[GameDataMan]+8]+48"
-DexterityPtr = "[[GameDataMan]+8]+4C"
-IntelligencePtr = "[[GameDataMan]+8]+50"
-FaithPtr = "[[GameDataMan]+8]+54"
-ArcanePtr = "[[GameDataMan]+8]+58"
+StartingClassPtr = BasePtr .. "+BF"
+LvlPtr = BasePtr .. "+68"
 
-GenderTypePtr = "[[GameDataMan]+8]+BE"
-VoiceTypePtr = "[[GameDataMan]+8]+C2"
-WeaponLvlPtr = "[[GameDataMan]+8]+E2"
+VigorPtr = BasePtr .. "+3C"
+MindPtr = BasePtr .. "+40"
+EndurancePtr = BasePtr .. "+44"
+StrengthPtr = BasePtr .. "+48"
+DexterityPtr = BasePtr .. "+4C"
+IntelligencePtr = BasePtr .. "+50"
+FaithPtr = BasePtr .. "+54"
+ArcanePtr = BasePtr .. "+58"
+
+GenderTypePtr = BasePtr .. "+BE"
+VoiceTypePtr = BasePtr .. "+C2"
+WeaponLvlPtr = BasePtr .. "+E2"
 --[[
  Define Pointers End
 --=========================================================================================================================================================================================================================================
@@ -103,9 +104,9 @@ local function StatTxtOnChange(sender, minValue)
    local newValue = tonumber(sender.Text)
    local maxValue = 99 -- It's always 99
    if newValue then
-      if newValue &lt; minValue then
+      if newValue < minValue then
          sender.Text = tostring(minValue)
-      elseif newValue &gt; maxValue then
+      elseif newValue > maxValue then
          sender.Text = tostring(maxValue)
       end
    else
@@ -120,9 +121,9 @@ function ComboBoxCheck(sender, minValue)
    local newValue = tonumber(sender.Text)
    local maxValue = 99 -- It's always 99
    if newValue then
-      if newValue &lt; minValue then
+      if newValue < minValue then
          sender.Text = tostring(minValue)
-      elseif newValue &gt; maxValue then
+      elseif newValue > maxValue then
          sender.Text = tostring(maxValue)
       end
    else
@@ -148,17 +149,17 @@ end
 function getHealthValue(vigorValue)
    if vigorValue == nil then
       HpTotal.Caption = 'Null'
-   elseif vigorValue &lt;= 1 then
+   elseif vigorValue <= 1 then
       HpTotal.Caption = '300'
-   elseif vigorValue &lt; 25 then
+   elseif vigorValue < 25 then
       HpTotal.Caption = string.format('%-5d', math.floor(math.pow((vigorValue - 1) / 24, 1.5) * 500 + 300))
-   elseif vigorValue &lt; 40 then
+   elseif vigorValue < 40 then
       HpTotal.Caption = string.format('%-5d', math.floor(math.pow((vigorValue - 25) / 15, 1.1) * 650 + 800))
-   elseif vigorValue &lt; 60 then
+   elseif vigorValue < 60 then
       HpTotal.Caption = string.format('%-5d', math.floor((1 - math.pow(1 - (vigorValue - 40) / 20, 1.2)) * 450 + 1450))
-   elseif vigorValue &lt; 99 then
+   elseif vigorValue < 99 then
       HpTotal.Caption = string.format('%-5d', math.floor((1 - math.pow(1 - (vigorValue - 60) / 39, 1.2)) * 200 + 1900))
-   elseif vigorValue &gt;= 99 then
+   elseif vigorValue >= 99 then
       HpTotal.Caption = '2100'
    else
       HpTotal.Caption = 'Null'
@@ -169,17 +170,17 @@ end
 function getFocusValue(mindValue)
    if mindValue == nil then
       MpTotal.Caption = 'Null'
-   elseif mindValue &lt;= 1 then
+   elseif mindValue <= 1 then
       MpTotal.Caption = '50'
-   elseif mindValue &lt; 15 then
+   elseif mindValue < 15 then
       MpTotal.Caption = string.format('%-5d', math.floor(((mindValue - 1) / 14) * 45 + 50))
-   elseif mindValue &lt; 35 then
+   elseif mindValue < 35 then
       MpTotal.Caption = string.format('%-5d', math.floor(((mindValue - 15) / 20) * 105 + 95))
-   elseif mindValue &lt; 60 then
+   elseif mindValue < 60 then
       MpTotal.Caption = string.format('%-5d', math.floor((1 - math.pow(1 - (mindValue - 35) / 25, 1.2)) * 150 + 200))
-   elseif mindValue &lt; 99 then
+   elseif mindValue < 99 then
       MpTotal.Caption = string.format('%-5d', math.floor(((mindValue - 60) / 39) * 100 + 350))
-   elseif mindValue &gt;= 99 then
+   elseif mindValue >= 99 then
       MpTotal.Caption = '450'
    else
       MpTotal.Caption = 'Null'
@@ -190,17 +191,17 @@ end
 function getEnduranceValue(enduranceValue)
    if enduranceValue == nil then
       SpTotal.Caption = 'Null'
-   elseif enduranceValue &lt;= 1 then
+   elseif enduranceValue <= 1 then
       SpTotal.Caption = '80'
-   elseif enduranceValue &lt; 15 then
+   elseif enduranceValue < 15 then
       SpTotal.Caption = string.format('%-5d', math.floor(((enduranceValue - 1) / 14) * 25 + 80))
-   elseif enduranceValue &lt; 30 then
+   elseif enduranceValue < 30 then
       SpTotal.Caption = string.format('%-5d', math.floor(((enduranceValue - 15) / 15) * 25 + 105))
-   elseif enduranceValue &lt; 50 then
+   elseif enduranceValue < 50 then
       SpTotal.Caption = string.format('%-5d', math.floor(((enduranceValue - 30) / 20) * 25 + 130))
-   elseif enduranceValue &lt; 99 then
+   elseif enduranceValue < 99 then
       SpTotal.Caption = string.format('%-5d', math.floor(((enduranceValue - 50) / 49) * 15 + 155))
-   elseif enduranceValue &gt;= 99 then
+   elseif enduranceValue >= 99 then
       SpTotal.Caption = '170'
    else
       SpTotal.Caption = 'Null'
@@ -211,17 +212,17 @@ end
 function getEquipLoad(enduranceValue)
    if enduranceValue == nil then
       EqTotal.Caption = 'Null'
-   elseif enduranceValue &lt;= 1 then
+   elseif enduranceValue <= 1 then
       EqTotal.Caption = '45.0'
-   elseif enduranceValue &lt; 8 then
+   elseif enduranceValue < 8 then
       EqTotal.Caption = string.format('%.1f', ((enduranceValue - 1) / 7) * 0 + 45)
-   elseif enduranceValue &lt; 25 then
+   elseif enduranceValue < 25 then
       EqTotal.Caption = string.format('%.1f', ((enduranceValue - 8) / 17) * 27 + 45)
-   elseif enduranceValue &lt; 60 then
+   elseif enduranceValue < 60 then
       EqTotal.Caption = string.format('%.1f', math.pow((enduranceValue - 25) / 35, 1.1) * 48 + 72)
-   elseif enduranceValue &lt; 99 then
+   elseif enduranceValue < 99 then
       EqTotal.Caption = string.format('%.1f', ((enduranceValue - 60) / 39) * 40 + 120)
-   elseif enduranceValue &gt;= 99 then
+   elseif enduranceValue >= 99 then
       EqTotal.Caption = '160.0'
    else
       EqTotal.Caption = 'Null'
@@ -255,16 +256,16 @@ end
  Array List Start
 --]]
 ClassStatsArray = {
-{15, 10, 11, 14, 13, 9, 9, 7,    --[[Stas, ClassID, Lvl &amp; name]] 0, 9,  'Vagabond'},
-{11, 12, 11, 10, 16, 10, 8, 9,   --[[Stas, ClassID, Lvl &amp; name]] 1, 8,  'Warrior'},
-{14, 9, 12, 16, 9, 7, 8, 11,     --[[Stas, ClassID, Lvl &amp; name]] 2, 7,  'Hero'},
-{10, 11, 10, 9, 13, 9, 9, 14,    --[[Stas, ClassID, Lvl &amp; name]] 3, 5,  'Bandit'},
-{9, 15, 9, 8, 12, 16, 7, 9,      --[[Stas, ClassID, Lvl &amp; name]] 4, 6,  'Astrologer'},
-{11, 14, 8, 11, 10, 7, 16, 10,   --[[Stas, ClassID, Lvl &amp; name]] 5, 7,  'Prophet'},
-{10, 13, 10, 12, 12, 9, 14, 9,   --[[Stas, ClassID, Lvl &amp; name]] 6, 10, 'Confessor'},
-{12, 11, 13, 12, 15, 9, 8, 8,    --[[Stas, ClassID, Lvl &amp; name]] 7, 9,  'Samurai'},
-{11, 12, 11, 11, 14, 14, 6, 9,   --[[Stas, ClassID, Lvl &amp; name]] 8, 9,  'Prisoner'},
-{10, 10, 10, 10, 10, 10, 10, 10, --[[Stas, ClassID, Lvl &amp; name]] 9, 1,  'Wretch'}
+{15, 10, 11, 14, 13, 9, 9, 7,    --[[Stas, ClassID, Lvl & name]] 0, 9,  'Vagabond'},
+{11, 12, 11, 10, 16, 10, 8, 9,   --[[Stas, ClassID, Lvl & name]] 1, 8,  'Warrior'},
+{14, 9, 12, 16, 9, 7, 8, 11,     --[[Stas, ClassID, Lvl & name]] 2, 7,  'Hero'},
+{10, 11, 10, 9, 13, 9, 9, 14,    --[[Stas, ClassID, Lvl & name]] 3, 5,  'Bandit'},
+{9, 15, 9, 8, 12, 16, 7, 9,      --[[Stas, ClassID, Lvl & name]] 4, 6,  'Astrologer'},
+{11, 14, 8, 11, 10, 7, 16, 10,   --[[Stas, ClassID, Lvl & name]] 5, 7,  'Prophet'},
+{10, 13, 10, 12, 12, 9, 14, 9,   --[[Stas, ClassID, Lvl & name]] 6, 10, 'Confessor'},
+{12, 11, 13, 12, 15, 9, 8, 8,    --[[Stas, ClassID, Lvl & name]] 7, 9,  'Samurai'},
+{11, 12, 11, 11, 14, 14, 6, 9,   --[[Stas, ClassID, Lvl & name]] 8, 9,  'Prisoner'},
+{10, 10, 10, 10, 10, 10, 10, 10, --[[Stas, ClassID, Lvl & name]] 9, 1,  'Wretch'}
 }
 
 -- Globalized for functions
@@ -498,8 +499,7 @@ end
 [disable]
 BuildMaker.destroy()
 CharacterSettingsCheckTimer.destroy()
-
-</AssemblerScript>
+]]></AssemblerScript>
     </CheatEntry>
   </CheatEntries>
 </CheatTable>
