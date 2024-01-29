@@ -1,0 +1,62 @@
+{
+   Vagabond = {
+      Name = "Vagabond",
+      Class = 0,
+      Level = 9,
+      Stats = {15, 10, 11, 14, 13, 9, 9, 7}
+   },
+   Warrior = {
+      Name = "Warrior",
+      Class = 1,
+      Level = 8,
+      Stats = {11, 12, 11, 10, 16, 10, 8, 9}
+   },
+   Hero = {
+      Name = "Hero",
+      Class = 2,
+      Level = 7,
+      Stats = {14, 9, 12, 16, 9, 7, 8, 11}
+   },
+   Bandit = {
+      Name = "Bandit",
+      Class = 3,
+      Level = 5,
+      Stats = {10, 11, 10, 9, 13, 9, 9, 14}
+   },
+   Astrologer = {
+      Name = "Astrologer",
+      Class = 4,
+      Level = 6,
+      Stats = {9, 15, 9, 8, 12, 16, 7, 9}
+   },
+   Prophet = {
+      Name = "Prophet",
+      Class = 5,
+      Level = 7,
+      Stats = {11, 14, 8, 11, 10, 7, 16, 10}
+   },
+   Confessor = {
+      Name = "Confessor",
+      Class = 6,
+      Level = 10,
+      Stats = {10, 13, 10, 12, 12, 9, 14, 9}
+   },
+   Samurai = {
+      Name = "Samurai",
+      Class = 7,
+      Level = 9,
+      Stats = {12, 11, 13, 12, 15, 9, 8, 8}
+   },
+   Prisoner = {
+      Name = "Prisoner",
+      Class = 8,
+      Level = 9,
+      Stats = {11, 12, 11, 11, 14, 14, 6, 9}
+   },
+   Wretch = {
+      Name = "Wretch",
+      Class = 9,
+      Level = 1,
+      Stats = {10, 10, 10, 10, 10, 10, 10, 10}
+   },
+}
