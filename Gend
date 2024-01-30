@@ -1,4 +1,4 @@
 {
-   TypeB = 0,
-   TypeA = 1,
+   {"Type B", 0},
+   {"Type A", 1}
 }
