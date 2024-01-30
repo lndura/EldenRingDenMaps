@@ -1,8 +1,8 @@
 {
-   Young1 = 0,
-   Young2 = 1,
-   Mature1 = 2,
-   Mature2 = 3,
-   Aged1 = 4,
-   Aged2 = 5,
+   {"Young1", 0},
+   {"Young2", 1},
+   {"Mature1", 2},
+   {"Mature2", 3},
+   {"Aged1", 4},
+   {"Aged2", 5},
 }
