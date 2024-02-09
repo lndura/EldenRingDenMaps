@@ -21,7 +21,7 @@
       Name = "Bandit",
       Class = 3,
       Level = 5,
-      Stats = {10, 11, 10, 9, 13, 9, 9, 14}
+      Stats = {10, 11, 10, 9, 13, 9, 8, 14}
    },
    {
       Name = "Astrologer",
